@@ -8,6 +8,8 @@ struct AVL_node{
 	ll val;
 	ll height;
 	ll bal_fact;
+	ll left_c;
+	ll right_c;
 	struct AVL_node* left = NULL;
 	struct AVL_node* right = NULL;
 }
@@ -16,8 +18,10 @@ node* newAVLnode(ll data)
 {
 	node* cnode = new struct AVL_node;
 	cnode->val = data;
-	cnode->height = 1;
+	cnode->height = 0;
 	cnode->bal_fact = 0;
+	cnode->left_c = 0;
+	cnode->right_c = 0;
 	return cnode;
 }
 
@@ -25,34 +29,39 @@ void _insert_AVL(node *rnode, node *nnode)
 {
 	ll x = nnode->val;
 	ll bfact;
+	node *unbalanced, *unbalanced_par;
+	string temp;
 	if(rnode == NULL)
 	{
 		rnode = nnode;
 		return;
 	}
-	node *tptr = rnode, *cptr;
+	node *tptr = rnode, *cnode;
 	do{
+		cnode = tptr;
 		if(tptr->val < x)
 		{
-			cnode = tptr->right;
 			tptr->bal_fact -= 1;
+			tptr = tptr->right;
+			right_c += 1;
 		}
 		else if(tptr->val > x)
 		{
-			cnode = tptr->left;
 			tptr->bal_fact += 1;
+			tptr = tptr->left;
+			left_c += 1;
 		}
 		else
 		{
 			if(bfact <= 0)
 			{
-				cnode = tptr->left;
 				tptr->bal_fact += 1;
+				tptr = tptr->left;
 			}
 			else
 			{
-				cnode = tptr->right;
-				tptr->bal_fact -= 1;
+				tptr->bal_fact -= 1
+				tptr = tptr->right;
 			}
 		}
 	}while();
@@ -76,5 +85,3 @@ int main()
 		_insert_AVL(root, ptr);
 		cout<<_median(arr, lv+1)<<endl;
 	}
-	
-}
