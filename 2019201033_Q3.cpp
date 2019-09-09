@@ -31,6 +31,7 @@ void _insert_AVL(node *rnode, node *nnode)
 	ll bfact;
 	node *unbalanced, *unbalanced_par;
 	string temp;
+	char ch;
 	if(rnode == NULL)
 	{
 		rnode = nnode;
@@ -42,12 +43,22 @@ void _insert_AVL(node *rnode, node *nnode)
 		if(tptr->val < x)
 		{
 			tptr->bal_fact -= 1;
+			if(tptr->right == NULL)
+			{
+				ch = 'r';
+				break;
+			}
 			tptr = tptr->right;
 			right_c += 1;
 		}
 		else if(tptr->val > x)
 		{
 			tptr->bal_fact += 1;
+			if(tptr->left == NULL)
+			{
+				ch = 'l';
+				break;
+			}
 			tptr = tptr->left;
 			left_c += 1;
 		}
@@ -56,15 +67,30 @@ void _insert_AVL(node *rnode, node *nnode)
 			if(bfact <= 0)
 			{
 				tptr->bal_fact += 1;
+				if(tptr->left == NULL)
+				{
+					ch = 'l';
+					break;
+				}
 				tptr = tptr->left;
 			}
 			else
 			{
 				tptr->bal_fact -= 1
+				if(tptr->right == NULL)
+				{
+					ch = 'r';
+					break;
+				}
 				tptr = tptr->right;
 			}
 		}
-	}while();
+	}while(1);
+	if(ch == 'r')
+		tptr->right = nnode;
+	else
+		tptr->left = nnode;
+	
 }
 
 ll _median(ll* ptr, ll size)
