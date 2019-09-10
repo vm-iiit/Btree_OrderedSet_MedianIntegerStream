@@ -1,8 +1,8 @@
 #include<iostream>
 using namespace std;
+
 typedef long long ll;
 typedef struct AVL_node node;
-
 
 struct AVL_node{
 	ll val;
@@ -33,171 +33,160 @@ void _inorder(node *root)
 		return;
 	}
 	_inorder(root->left);
-	cout<<root->val<<' ';
+	cout<<root->val<<" with height "<<root->height<<" and leftc and rightc "<<root->left_c<<' '<<root->right_c<<endl;
 	_inorder(root->right);
 }
 
-void _fill_height_bf(node *ptr)
+node *_rotate(node *target, string rot_type)
 {
-	if(ptr->left == NULL && ptr->right == NULL)
+	node *temp1, *temp2, *stemp2, *stemp3;
+	ll count_sub, s2count, s3count;
+	cout<<"rotate case "<<rot_type<<endl;
+	if(rot_type == "LL")
 	{
-		ptr->height = 1;
-		return;
+		temp2 = target->left;
+		temp1 = temp2->right;
+		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c);
+		temp2->right = target;
+		target->left = temp1;
+		target->left_c = count_sub;
+		temp2->right_c = target->left_c + target->right_c + 1;
+		cout<<"done\n";
 	}
-	else if(ptr->left && ptr->right)
+	else if(rot_type == "RR")
 	{
-		_fill_height_bf(ptr->left);
-		_fill_height_bf(ptr->right);
-		ptr->height = 1+max(ptr->left->height)
+		temp2 = target->right;
+		temp1 = temp2->left;
+		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c);
+		temp2->left = target;
+		target->right = temp1;
+		target->right_c = count_sub;
+		temp2->left_c = target->left_c + target->right_c + 1;	
 	}
+	else if(rot_type == "LR")
+	{
+		temp1 = target->left;
+		temp2 = temp1->right;
+		stemp2 = temp2->left;
+		stemp3 = temp2->right;
+		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c);
+		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c);
+		temp1->right = stemp2;
+		target->left = stemp3;
+		temp2->left = temp1;
+		temp2->right = target;
+		target->left_c = s3count;
+		temp1->right_c = s2count;
+		temp2->left_c = temp1->left_c + temp1->right_c + 1;
+		temp2->right_c = target->left_c + target->right_c + 1;
+	}
+	else
+	{
+		temp1 = target->right;
+		temp2 = temp1->left;
+		stemp2 = temp2->left;
+		stemp3 = temp2->right;
+		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c);
+		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c);
+		temp1->left = stemp3;
+		target->right = stemp2;
+		temp2->right = temp1;
+		temp2->left = target;
+		target->right_c = s2count;
+		temp1->left_c = s3count;
+		temp2->right_c = temp1->left_c + temp1->right_c + 1;
+		temp2->left_c = target->left_c + target->right_c + 1;
+	}
+
+	ll lh, rh;
+	if(temp1)
+	{
+
+		lh = (temp1->left)?(temp1->left->height):-1;
+		rh = (temp1->right)?(temp1->right->height):-1;
+		temp1->height = 1+ max(lh,rh);
+	}
+
+	lh = (target->left)?(target->left->height):-1;
+	rh = (target->right)?(target->right->height):-1;
+	target->height = 1+ max(lh,rh);
+
+	lh = (temp2->left)?(temp2->left->height):-1;
+	rh = (temp2->right)?(temp2->right->height):-1;
+	temp2->height = 1+ max(lh,rh);
+
+	return temp2;
 }
 
-node *_find_parent(node *ptr, node *root)
-{
-	ll value = ptr->val;
-	node *seeker, *ptr1, *ptr2;
-	seeker = root;
-	while(1)
-	{
-		if(seeker->val < value)
-		{
-			if(seeker->right == ptr)
-				return seeker;
-			seeker = seeker->right;
-		}
-		else if(seeker->val > value)
-		{
-			if(seeker->left == ptr)
-				return seeker;
-			seeker = seeker->left;
-		}
-		else
-		{
-			if(seeker->left && seeker->right)
-			{
-				ptr1 = _find_parent(ptr, seeker->left);
-				ptr2 = _find_parent(ptr, seeker->right);
-				return (ptr1 == NULL)?ptr2:ptr1;
-			}
-			else if(seeker->left)
-			{
-				if(seeker->left == ptr)
-					return seeker;
-				seeker = seeker->left;
-			}
-			else if(seeker->right)
-			{
-				if(seeker->right == ptr)
-					return seeker;
-				seeker = seeker->right;
-			}
-		}
-		if(seeker == NULL)
-			return NULL;
-	}
-}
-
-void _insert_AVL(node*& rnode, node *nnode)
+node *_insert_AVL(node* rnode, node *nnode)
 {
 	//cout<<"got "<<rnode<<endl;
 	ll x = nnode->val;
-	ll bfact;
-	node *unbalanced = NULL;
-	string temp;
-	char ch;
-	cout<<"inserting node "<<nnode->val<<endl;
+	//ll bfact;
+	//char ch;
 	if(rnode == NULL)
 	{
-		//cout<<"initally empty\n";
 		rnode = nnode;
-		return;
+		return nnode;
 	}
-	node *tptr = rnode;
-	do{
-		//cnode = tptr;
-		//unbalanced_par = cnode;
-		//cout<<"unbalanced's parent "<<unbalanced_par->val<<endl;
-		if(tptr->val < x)
+
+	if(x < rnode->val)
+	{
+		cout<<"moving left of "<<rnode->val<<endl;
+		rnode->left_c += 1;
+		rnode->left = _insert_AVL(rnode->left, nnode);
+	}
+	else if(x > rnode->val)
+	{
+		cout<<"moving right of "<<rnode->val<<endl;
+		rnode->right_c += 1;
+		rnode->right = _insert_AVL(rnode->right, nnode);
+	}
+	else
+	{
+		if(rnode->right_c >= rnode->left_c)
 		{
-			cout<<"moving right\n";
-			tptr->bal_fact -= 1;
-			tptr->right_c += 1;
-			if(tptr->right == NULL)
-			{
-				ch = 'r';
-				break;
-			}
-			if(abs(tptr->bal_fact) > 1 )
-			{
-				unbalanced = tptr;
-				cout<<"unbalanced node "<<unbalanced->val<<endl;
-			}
-			tptr = tptr->right;
-		}
-		else if(tptr->val > x)
-		{
-			cout<<"moving left\n";
-			tptr->bal_fact += 1;
-			tptr->left_c += 1;
-			if(tptr->left == NULL)
-			{
-				ch = 'l';
-				break;
-			}
-			if(abs(tptr->bal_fact) > 1 )
-			{
-				unbalanced = tptr;
-				cout<<"unbalanced node "<<unbalanced->val<<endl;
-			}
-			tptr = tptr->left;
+			rnode->left_c += 1;
+			rnode->left = _insert_AVL(rnode->left, nnode);		
 		}
 		else
 		{
-			if(bfact <= 0)
-			{
-				tptr->bal_fact += 1;
-				if(tptr->left == NULL)
-				{
-					ch = 'l';
-					break;
-				}
-				if(abs(tptr->bal_fact) > 1 )
-				{
-					unbalanced = tptr;
-					cout<<"unbalanced node "<<unbalanced->val<<endl;
-				}
-				tptr = tptr->left;
-			}
-			else
-			{
-				tptr->bal_fact -= 1;
-				if(tptr->right == NULL)
-				{
-					ch = 'r';
-					break;
-				}
-				if(abs(tptr->bal_fact) > 1 )
-				{
-					unbalanced = tptr;
-					cout<<"unbalanced node "<<unbalanced->val<<endl;
-				}
-				tptr = tptr->right;
-			}
+			rnode->right_c += 1;
+			rnode->right = _insert_AVL(rnode->right, nnode);		
 		}
-		_fill_height_bf(rnode);
-		//cout<<"parent->child "<<cnode->val<<' '<<tptr->val<<endl;
-	}while(1);
-
-	if(ch == 'r')
-		tptr->right = nnode;
-	else if(ch == 'l')
-		tptr->left = nnode;
-	if(unbalanced != NULL)
-	{
-		node *unbalanced_par = _find_parent(unbalanced, rnode);
-		cout<<"rotn reqd at "<<unbalanced->val<<"'s subtree with "<<unbalanced_par->val<<" parent\n";
 	}
-	cout<<"inserted "<<nnode->val<<endl<<endl;
+	ll lh, rh;
+	lh = (rnode->left)?(rnode->left->height):-1;
+	rh = (rnode->right)?(rnode->right->height):-1;
+	rnode->height = 1 + max(lh, rh);
+	cout<<"updated "<<rnode->val<<"'s height to "<<rnode->height<<endl;
+	rnode->bal_fact = lh-rh;
+
+	node *unbalanced = NULL;
+	//node *unbalanced_par = NULL;
+
+	if(abs(rnode->bal_fact) >1)
+	{
+		unbalanced = rnode;
+	}
+	if(unbalanced)
+	{
+		string path;
+		cout<<"balancing fact "<<unbalanced->bal_fact<<endl;
+		cout<<"rotn needed at "<<unbalanced->val<<endl;
+		if(unbalanced->bal_fact < 0 && unbalanced->right->bal_fact < 0)
+			path.append("RR");
+		else if(unbalanced->bal_fact < 0 && unbalanced->right->bal_fact > 0)
+			path.append("RL");
+		else if(unbalanced->bal_fact > 0 && unbalanced->left->bal_fact > 0)
+			path.append("LL");
+		else
+			path.append("LR");
+		cout<<"rotation type "<<path<<endl;
+		return _rotate(unbalanced, path);
+	}
+	cout<<"inserted node "<<nnode->val<<endl<<endl;
+	return rnode;
 }
 
 /*ll _median(ll* ptr, ll size)
@@ -212,6 +201,7 @@ int main()
 	cin>>n;
 	node *root = NULL, *ptr;
 	ll arr[n];
+	
 	for(lv=0;lv<n;lv++)
 	{
 		cin>>arr[lv];
@@ -219,9 +209,14 @@ int main()
 		/*if(ptr == NULL)
 			cout<<"node not created\n";
 		cout<<"sending "<<root<<endl;*/
-		_insert_AVL(root, ptr);
+		//path[0] = '\0';
+		cout<<"inserting node "<<ptr->val<<endl;
+		root = _insert_AVL(root, ptr);
+		cout<<"\n\n";
+		_inorder(root);
+		cout<<"\n\n";
 		//cout<<_median(arr, lv+1)<<endl;
 	}
 	cout<<endl;
-	_inorder(root);
+	
 }
