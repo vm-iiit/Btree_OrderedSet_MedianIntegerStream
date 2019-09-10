@@ -1,7 +1,7 @@
 #include<iostream>
 using namespace std;
 
-typedef long long ll;
+typedef float ll;
 typedef struct AVL_node node;
 
 struct AVL_node{
@@ -189,7 +189,7 @@ node *_insert_AVL(node* rnode, node *nnode)
 	return rnode;
 }
 
-ll _median(node *ptr, ll size)
+ll _median(node *ptr, int size)
 {
 	ll nb = ptr->left_c, na = ptr->right_c;
 	if(size == 1)
@@ -208,7 +208,7 @@ ll _median(node *ptr, ll size)
 			{
 				ptr = ptr->right;
 				nb += 1 + ptr->left_c;
-				na -= 1 + ptr->right_c;
+				na -= 1 + ptr->left_c;
 			}
 			else if(nb > cnt_des)
 			{
@@ -234,7 +234,7 @@ ll _median(node *ptr, ll size)
 			{
 				p1 = p1->right;
 				nb += 1 + p1->left_c;
-				na -= 1 + p1->right_c;
+				na -= 1 + p1->left_c;
 			}
 			else if(nb > cnt_des1)
 			{
@@ -256,7 +256,7 @@ ll _median(node *ptr, ll size)
 			{
 				p2 = p2->right;
 				nb += 1 + p2->left_c;
-				na -= 1 + p2->right_c;
+				na -= 1 + p2->left_c;
 			}
 			else if(nb > cnt_des1)
 			{
@@ -274,7 +274,7 @@ ll _median(node *ptr, ll size)
 int main()
 {
 	//cout<<"main func\n";
-	ll n, lv;
+	int n, lv;
 	cin>>n;
 	node *root = NULL, *ptr;
 	ll arr[n];
@@ -293,7 +293,7 @@ int main()
 		//_inorder(root);
 		//cout<<"\n\n";
 		median = _median(root, lv+1);
-		cout<<"MEDIAN IS "<<median<<endl;
+		printf("%.1f\n", median);
 	}
 	//cout<<endl;
 	
