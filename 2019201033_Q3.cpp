@@ -33,7 +33,7 @@ void _inorder(node *root)
 		return;
 	}
 	_inorder(root->left);
-	cout<<root->val<<" with height "<<root->height<<" and leftc and rightc "<<root->left_c<<' '<<root->right_c<<endl;
+	//cout<<root->val<<" with height "<<root->height<<" and leftc and rightc "<<root->left_c<<' '<<root->right_c<<endl;
 	_inorder(root->right);
 }
 
@@ -41,7 +41,7 @@ node *_rotate(node *target, string rot_type)
 {
 	node *temp1, *temp2, *stemp2, *stemp3;
 	ll count_sub, s2count, s3count;
-	cout<<"rotate case "<<rot_type<<endl;
+	//cout<<"rotate case "<<rot_type<<endl;
 	if(rot_type == "LL")
 	{
 		temp2 = target->left;
@@ -51,7 +51,7 @@ node *_rotate(node *target, string rot_type)
 		target->left = temp1;
 		target->left_c = count_sub;
 		temp2->right_c = target->left_c + target->right_c + 1;
-		cout<<"done\n";
+		//cout<<"done\n";
 	}
 	else if(rot_type == "RR")
 	{
@@ -132,13 +132,13 @@ node *_insert_AVL(node* rnode, node *nnode)
 
 	if(x < rnode->val)
 	{
-		cout<<"moving left of "<<rnode->val<<endl;
+		//cout<<"moving left of "<<rnode->val<<endl;
 		rnode->left_c += 1;
 		rnode->left = _insert_AVL(rnode->left, nnode);
 	}
 	else if(x > rnode->val)
 	{
-		cout<<"moving right of "<<rnode->val<<endl;
+		//cout<<"moving right of "<<rnode->val<<endl;
 		rnode->right_c += 1;
 		rnode->right = _insert_AVL(rnode->right, nnode);
 	}
@@ -159,7 +159,7 @@ node *_insert_AVL(node* rnode, node *nnode)
 	lh = (rnode->left)?(rnode->left->height):-1;
 	rh = (rnode->right)?(rnode->right->height):-1;
 	rnode->height = 1 + max(lh, rh);
-	cout<<"updated "<<rnode->val<<"'s height to "<<rnode->height<<endl;
+	//cout<<"updated "<<rnode->val<<"'s height to "<<rnode->height<<endl;
 	rnode->bal_fact = lh-rh;
 
 	node *unbalanced = NULL;
@@ -172,8 +172,8 @@ node *_insert_AVL(node* rnode, node *nnode)
 	if(unbalanced)
 	{
 		string path;
-		cout<<"balancing fact "<<unbalanced->bal_fact<<endl;
-		cout<<"rotn needed at "<<unbalanced->val<<endl;
+		//cout<<"balancing fact "<<unbalanced->bal_fact<<endl;
+		//cout<<"rotn needed at "<<unbalanced->val<<endl;
 		if(unbalanced->bal_fact < 0 && unbalanced->right->bal_fact < 0)
 			path.append("RR");
 		else if(unbalanced->bal_fact < 0 && unbalanced->right->bal_fact > 0)
@@ -182,39 +182,103 @@ node *_insert_AVL(node* rnode, node *nnode)
 			path.append("LL");
 		else
 			path.append("LR");
-		cout<<"rotation type "<<path<<endl;
+		//cout<<"rotation type "<<path<<endl;
 		return _rotate(unbalanced, path);
 	}
-	cout<<"inserted node "<<nnode->val<<endl<<endl;
+	//cout<<"inserted node "<<nnode->val<<endl<<endl;
 	return rnode;
 }
 
 ll _median(node *ptr, ll size)
 {
+	ll nb = ptr->left_c, na = ptr->right_c;
 	if(size == 1)
 		return ptr->val;
+	else if(size == 2)
+	{
+		ll x = (ptr->left == NULL)?(ptr->right->val):(ptr->left->val);
+		return (x + ptr->val)/2;
+	}
 	else if(size%2)
 	{
 		ll cnt_des = size/2;
-		while(1)
+		while(nb != cnt_des && na != cnt_des)
 		{
-			if(ptr->left_c == cnt_des && ptr->right_c == cnt_des)
-				return ptr->val;
-			else if(ptr->left_c > cnt_des)
+			if(nb < cnt_des)
+			{
+				ptr = ptr->right;
+				nb += 1 + ptr->left_c;
+				na -= 1 + ptr->right_c;
+			}
+			else if(nb > cnt_des)
+			{
 				ptr = ptr->left;
-			else
+				nb -= 1 + ptr->right_c;
+				na += 1 + ptr->right_c;
+			}
 		}
+		return ptr->val;
+	}
+	else
+	{
+		node *p1, *p2;
+		p1 = ptr;
+		p2 = ptr;
+		ll cnt_des1 = size/2 - 1;
+		ll cnt_des2 = size/2 ;
+		//cout<<"first's desired counts "<<cnt_des1<<' '<<cnt_des2<<endl;
+		//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
+		while(nb != cnt_des1 && na != cnt_des2)
+		{
+			if(nb < cnt_des1)
+			{
+				p1 = p1->right;
+				nb += 1 + p1->left_c;
+				na -= 1 + p1->right_c;
+			}
+			else if(nb > cnt_des1)
+			{
+				p1 = p1->left;
+				nb -= 1 + p1->right_c;
+				na += 1 + p1->right_c;
+			}
+			//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
+		}
+		
+		cnt_des1 = size/2 ;
+		cnt_des2 = size/2 - 1;
+		nb = ptr->left_c, na = ptr->right_c;
+		//cout<<"second's desired counts "<<cnt_des1<<' '<<cnt_des2<<endl;
+		//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
+		while(nb != cnt_des1 && na != cnt_des2)
+		{
+			if(nb < cnt_des1)
+			{
+				p2 = p2->right;
+				nb += 1 + p2->left_c;
+				na -= 1 + p2->right_c;
+			}
+			else if(nb > cnt_des1)
+			{
+				p2 = p2->left;
+				nb -= 1 + p2->right_c;
+				na += 1 + p2->right_c;
+			}
+			//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
+		}
+		//cout<<"p1 "<<p1->val<<" p2 "<<p2->val<<endl;
+		return (p1->val + p2->val)/2;
 	}
 }
 
 int main()
 {
-	cout<<"main func\n";
+	//cout<<"main func\n";
 	ll n, lv;
 	cin>>n;
 	node *root = NULL, *ptr;
 	ll arr[n];
-	
+	ll median;
 	for(lv=0;lv<n;lv++)
 	{
 		cin>>arr[lv];
@@ -223,13 +287,14 @@ int main()
 			cout<<"node not created\n";
 		cout<<"sending "<<root<<endl;*/
 		//path[0] = '\0';
-		cout<<"inserting node "<<ptr->val<<endl;
+		//cout<<"inserting node "<<ptr->val<<endl;
 		root = _insert_AVL(root, ptr);
-		cout<<"\n\n";
+		//cout<<"\n\n";
 		_inorder(root);
-		cout<<"\n\n";
-		cout<<_median(root, lv+1)<<endl;
+		//cout<<"\n\n";
+		median = _median(root, lv+1);
+		cout<<"MEDIAN IS "<<median<<endl;
 	}
-	cout<<endl;
+	//cout<<endl;
 	
 }
