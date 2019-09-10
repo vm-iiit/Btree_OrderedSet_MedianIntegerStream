@@ -46,7 +46,7 @@ node *_rotate(node *target, string rot_type)
 	{
 		temp2 = target->left;
 		temp1 = temp2->right;
-		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c);
+		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c + 1);
 		temp2->right = target;
 		target->left = temp1;
 		target->left_c = count_sub;
@@ -57,7 +57,7 @@ node *_rotate(node *target, string rot_type)
 	{
 		temp2 = target->right;
 		temp1 = temp2->left;
-		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c);
+		count_sub = (temp1 == NULL)?0:(temp1->left_c + temp1->right_c + 1);
 		temp2->left = target;
 		target->right = temp1;
 		target->right_c = count_sub;
@@ -69,8 +69,8 @@ node *_rotate(node *target, string rot_type)
 		temp2 = temp1->right;
 		stemp2 = temp2->left;
 		stemp3 = temp2->right;
-		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c);
-		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c);
+		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c + 1);
+		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c + 1);
 		temp1->right = stemp2;
 		target->left = stemp3;
 		temp2->left = temp1;
@@ -86,8 +86,8 @@ node *_rotate(node *target, string rot_type)
 		temp2 = temp1->left;
 		stemp2 = temp2->left;
 		stemp3 = temp2->right;
-		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c);
-		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c);
+		s2count = (stemp2 == NULL)?0:(stemp2->left_c + stemp2->right_c + 1);
+		s3count = (stemp3 == NULL)?0:(stemp3->left_c + stemp3->right_c + 1);
 		temp1->left = stemp3;
 		target->right = stemp2;
 		temp2->right = temp1;
@@ -189,10 +189,23 @@ node *_insert_AVL(node* rnode, node *nnode)
 	return rnode;
 }
 
-/*ll _median(ll* ptr, ll size)
+ll _median(node *ptr, ll size)
 {
-
-}*/
+	if(size == 1)
+		return ptr->val;
+	else if(size%2)
+	{
+		ll cnt_des = size/2;
+		while(1)
+		{
+			if(ptr->left_c == cnt_des && ptr->right_c == cnt_des)
+				return ptr->val;
+			else if(ptr->left_c > cnt_des)
+				ptr = ptr->left;
+			else
+		}
+	}
+}
 
 int main()
 {
@@ -215,7 +228,7 @@ int main()
 		cout<<"\n\n";
 		_inorder(root);
 		cout<<"\n\n";
-		//cout<<_median(arr, lv+1)<<endl;
+		cout<<_median(root, lv+1)<<endl;
 	}
 	cout<<endl;
 	
