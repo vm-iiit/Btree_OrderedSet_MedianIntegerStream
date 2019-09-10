@@ -4,6 +4,8 @@ using namespace std;
 typedef float ll;
 typedef struct AVL_node node;
 
+node *_rotate(node *, string);
+
 struct AVL_node{
 	ll val;
 	ll height;
@@ -35,6 +37,60 @@ void _inorder(node *root)
 	_inorder(root->left);
 	cout<<root->val<<" with height "<<root->height<<" and leftc and rightc "<<root->left_c<<' '<<root->right_c<<endl;
 	_inorder(root->right);
+}
+
+bool found = false;
+node *_delete(node *root, ll ele)
+{
+	if(root == NULL)
+		return NULL;
+	else if(root->val == ele)
+	{
+		//found = true;
+
+
+		return root;
+	}
+	else if(root->left && root->left->val == ele)
+	{
+		root->left = _delete(root->left, ele);
+	}
+	else if(root->right && root->right->val == ele)
+	{
+		root->right = _delete(root->right, ele);
+	}
+	else
+	{
+		if(root->val < ele)
+			root->right = _delete(root->right, ele);
+		else
+			root->left = _delete(root->left, ele);
+	}
+
+	int lh, rh;
+	lh = (root->left)?(root->left->height):-1;
+	rh = (root->right)?(root->right->height):-1;
+	root->height = 1 + max(lh, rh);
+	int lc, rc;
+	lc = (root->left)?(root->left->left_c + root->left->right_c + 1):0;
+	rc = (root->right)?(root->right->left_c + root->right->right_c + 1):0;
+	root->left_c = lc;
+	root->right_c = rc;
+	if(abs(lh-rh) > 1)
+	{
+		string path;
+		if(root->bal_fact < 0 && root->right->bal_fact < 0)
+			path.append("RR");
+		else if(root->bal_fact < 0 && root->right->bal_fact > 0)
+			path.append("RL");
+		else if(root->bal_fact > 0 && root->left->bal_fact > 0)
+			path.append("LL");
+		else
+			path.append("LR");
+		//cout<<"rotation type "<<path<<endl;
+		return _rotate(root, path);
+	}
+	return root;
 }
 
 node *_rotate(node *target, string rot_type)
@@ -121,9 +177,9 @@ node *_rotate(node *target, string rot_type)
 node *_insert_AVL(node* rnode, node *nnode)
 {
 	//cout<<"got "<<rnode<<endl;
-	ll x = nnode->val;
 	//ll bfact;
 	//char ch;
+	ll x = nnode->val;
 	if(rnode == NULL)
 	{
 		rnode = nnode;
@@ -144,18 +200,9 @@ node *_insert_AVL(node* rnode, node *nnode)
 	}
 	else
 	{
-		if(rnode->right_c >= rnode->left_c)
-		{
-			rnode->left_c += 1;
-			rnode->left = _insert_AVL(rnode->left, nnode);		
-		}
-		else
-		{
-			rnode->right_c += 1;
-			rnode->right = _insert_AVL(rnode->right, nnode);		
-		}
+		return NULL;
 	}
-	ll lh, rh;
+	int lh, rh;
 	lh = (rnode->left)?(rnode->left->height):-1;
 	rh = (rnode->right)?(rnode->right->height):-1;
 	rnode->height = 1 + max(lh, rh);
@@ -275,26 +322,61 @@ int main()
 {
 	//cout<<"main func\n";
 	int n, lv;
-	cin>>n;
-	node *root = NULL, *ptr;
-	ll arr[n];
+	//cin>>n;
+	node *root = NULL, *ptr, *ptr2;
+	//ll arr[n];
 	ll median;
-	for(lv=0;lv<n;lv++)
+	int choice, size=0, ele;
+	while(1)
 	{
-		cin>>arr[lv];
-		ptr = newAVLnode(arr[lv]);
+		cout<<endl;
+		cout<<"1 - insert\n";
+		cout<<"2 - remove\n";
+		cout<<"3 - find element\n";
+		cout<<"4 - find closest element\n";
+		cout<<"5 - find kth largest element\n";
+		cout<<"6 - range query\n\n";
+		cin>>choice;
+		switch(choice){
+			case 1: cin>>ele;
+					ptr = newAVLnode(ele);
+					ptr2 = _insert_AVL(root, ptr);
+					if(ptr2 != NULL)
+					{
+						root = ptr2;
+						cout<<"element "<<ele<<" inserted\n";
+					}
+					else
+						cout<<"element already present\n";
+			case 2: cin>>ele;
+					found = false;
+					ptr2 = _delete(root, ele);
+					if(ptr2 != NULL)
+					{
+						cout<<"element "<<ele<<" deleted\n";
+						root = ptr;
+					}
+					else
+						cout<<"element not present in set or set empty\n";
+		}
+		_inorder(root);
+	}
+	//for(lv=0;lv<n;lv++)
+	/*{
+		cin>>arr[lv];*/
+		
 		/*if(ptr == NULL)
 			cout<<"node not created\n";
 		cout<<"sending "<<root<<endl;*/
 		//path[0] = '\0';
 		//cout<<"inserting node "<<ptr->val<<endl;
-		root = _insert_AVL(root, ptr);
+		
 		//cout<<"\n\n";
 		//_inorder(root);
 		//cout<<"\n\n";
-		median = _median(root, lv+1);
+		/*median = _median(root, lv+1);
 		printf("%.1f\n", median);
-	}
+	}*/
 	//cout<<endl;
 	
 }
