@@ -236,31 +236,26 @@ node *_insert_AVL(node* rnode, node *nnode)
 	return rnode;
 }
 
-ll _median_modified(node *ptr, int size)
+ll _median_modified(node *ptr, int k, int size)
 {
 	ll nb = ptr->left_c, na = ptr->right_c;
-	if(size == 1)
-		return ptr->val;
-	else
+	ll cnt_des = size-k;
+	while(nb != cnt_des)
 	{
-		ll cnt_des = size-1;
-		while(nb != cnt_des && na != cnt_des)
+		if(nb < cnt_des)
 		{
-			if(nb < cnt_des)
-			{
-				ptr = ptr->right;
-				nb += 1 + ptr->left_c;
-				na -= 1 + ptr->left_c;
-			}
-			else if(nb > cnt_des)
-			{
-				ptr = ptr->left;
-				nb -= 1 + ptr->right_c;
-				na += 1 + ptr->right_c;
-			}
+			ptr = ptr->right;
+			nb += 1 + ptr->left_c;
+			na -= 1 + ptr->left_c;
 		}
-		return ptr->val;
+		else if(nb > cnt_des)
+		{
+			ptr = ptr->left;
+			nb -= 1 + ptr->right_c;
+			na += 1 + ptr->right_c;
+		}
 	}
+	return ptr->val;
 }
 
 node *_find(node *ptr, ll x, ll diff)
@@ -414,11 +409,12 @@ int main()
 	{
 		cout<<endl<<endl;
 		cout<<"1 - insert\n";
-		cout<<"2 - remove\n";
+		cout<<"2 - delete\n";
 		cout<<"3 - find exact element\n";
 		cout<<"4 - find closest element\n";
 		cout<<"5 - find kth largest element\n";
-		cout<<"6 - range query\n\n";
+		cout<<"6 - range query\n";
+		cout<<"7 - exit\n\n";
 		cin>>choice;
 		switch(choice){
 			case 1: cin>>ele;
@@ -433,6 +429,7 @@ int main()
 					else
 						cout<<"element already present\n";
 					break;
+
 			case 2: cin>>ele;
 					found = false;
 					ptr2 = _delete(root, ele);
@@ -444,6 +441,7 @@ int main()
 					else
 						cout<<"element not present in set or set empty\n";
 					break;
+
 			case 3: cin>>ele;
 					ptr = _find(root, ele, 0);
 					if(ptr == NULL)
@@ -451,6 +449,7 @@ int main()
 					else
 						cout<<"set contains the element\n";
 					break;
+
 			case 4: cin>>ele;
 					ptr = _find(root, ele, 1);
 					if(ptr == NULL)
@@ -458,15 +457,17 @@ int main()
 					else
 						cout<<"closest element is "<<ptr->val<<endl;
 					break;
+
 			case 5: cin>>ele;
 					if(ele > size || ele <= 0 || size ==0)
 					{
 						cout<<"Invalid input or empty set\n";
 						continue;
 					}
-					median_modi = _median_modified(root, ele);
+					median_modi = _median_modified(root, ele, size);
 					cout<<ele<<"'th largest element is "<<median_modi<<endl;
 					break;
+
 			case 6: cin>>lower>>upper;
 					if(size == 0 || lower > upper)
 					{
@@ -474,8 +475,12 @@ int main()
 						continue;
 					}
 					cout<<"no. of elements in range is :"<<_range_q(lower, upper, root)<<endl;
+					break;
+			case 7: exit(0);
+
+			default:cout<<"Wrong i/p, try again\n";
 		}
-		cout<<"Tree description :\n";
+		cout<<endl<<"Tree description :\n";
 		_inorder(root);
 	}
 	//for(lv=0;lv<n;lv++)
