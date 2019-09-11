@@ -236,19 +236,14 @@ node *_insert_AVL(node* rnode, node *nnode)
 	return rnode;
 }
 
-ll _median(node *ptr, int size)
+ll _median_modified(node *ptr, int size)
 {
 	ll nb = ptr->left_c, na = ptr->right_c;
 	if(size == 1)
 		return ptr->val;
-	else if(size == 2)
+	else
 	{
-		ll x = (ptr->left == NULL)?(ptr->right->val):(ptr->left->val);
-		return (x + ptr->val)/2;
-	}
-	else if(size%2)
-	{
-		ll cnt_des = size/2;
+		ll cnt_des = size-1;
 		while(nb != cnt_des && na != cnt_des)
 		{
 			if(nb < cnt_des)
@@ -266,56 +261,143 @@ ll _median(node *ptr, int size)
 		}
 		return ptr->val;
 	}
+}
+
+node *_find(node *ptr, ll x, ll diff)
+{	
+	if(ptr == NULL)
+		return NULL;
+	if(diff == 0)
+	{
+		while(ptr && ptr->val != x)
+		{
+			if(ptr->val < x)
+				ptr = ptr->right;
+			else
+				ptr=ptr->left;
+		}
+		return ptr;
+	}
 	else
 	{
-		node *p1, *p2;
-		p1 = ptr;
-		p2 = ptr;
-		ll cnt_des1 = size/2 - 1;
-		ll cnt_des2 = size/2 ;
-		//cout<<"first's desired counts "<<cnt_des1<<' '<<cnt_des2<<endl;
-		//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
-		while(nb != cnt_des1 && na != cnt_des2)
+		node *found = ptr;
+		ll ldiff, lval=INT_MAX, gdiff=INT_MAX;
+		while(ptr)
 		{
-			if(nb < cnt_des1)
+			if(ptr->val == x)
+				return ptr;
+			else
 			{
-				p1 = p1->right;
-				nb += 1 + p1->left_c;
-				na -= 1 + p1->left_c;
+				ldiff = abs(x-ptr->val);
+				if(ldiff == gdiff)
+				{
+					if(ptr->val < lval)
+					{
+						lval = ptr->val;
+						found = ptr;
+					}
+				}
+				else if(ldiff < gdiff)
+				{
+					gdiff = ldiff;
+					lval = ptr->val;
+					found = ptr;
+				}
+				if(ptr->val < x)
+					ptr=ptr->right;
+				else
+					ptr=ptr->left;
 			}
-			else if(nb > cnt_des1)
-			{
-				p1 = p1->left;
-				nb -= 1 + p1->right_c;
-				na += 1 + p1->right_c;
-			}
-			//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
 		}
-		
-		cnt_des1 = size/2 ;
-		cnt_des2 = size/2 - 1;
-		nb = ptr->left_c, na = ptr->right_c;
-		//cout<<"second's desired counts "<<cnt_des1<<' '<<cnt_des2<<endl;
-		//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
-		while(nb != cnt_des1 && na != cnt_des2)
-		{
-			if(nb < cnt_des1)
-			{
-				p2 = p2->right;
-				nb += 1 + p2->left_c;
-				na -= 1 + p2->left_c;
-			}
-			else if(nb > cnt_des1)
-			{
-				p2 = p2->left;
-				nb -= 1 + p2->right_c;
-				na += 1 + p2->right_c;
-			}
-			//cout<<"num b4 "<<nb<<" num aft "<<na<<endl;
-		}
-		//cout<<"p1 "<<p1->val<<" p2 "<<p2->val<<endl;
-		return (p1->val + p2->val)/2;
+		return found;
 	}
+}
+
+node *find_insuc(node *root, ll ele)
+{
+	node *ptr=NULL;
+	ll ldiff, gdiff = INT_MAX;
+	while(root)
+	{
+		if(root->val == ele)
+			return root;
+		else if(root->val < ele)
+			root = root->right;
+		else
+		{
+			ldiff = root->val - ele;
+			if(ldiff < gdiff)
+			{
+				gdiff = ldiff;
+				ptr = root;
+			}
+			root = root->left;
+		}
+	}
+	return ptr;
+}
+
+node *find_inpred(node *root, ll ele)
+{
+	node *ptr=NULL;
+	ll ldiff, gdiff = INT_MAX;
+	while(root)
+	{
+		if(root->val == ele)
+			return root;
+		else if(root->val > ele)
+			root = root->left;
+		else
+		{
+			ldiff = ele - root->val ;
+			if(ldiff < gdiff)
+			{
+				gdiff = ldiff;
+				ptr = root;
+			}
+			root = root->right;
+		}
+	}
+	return ptr;
+}
+
+int nodes_b4(node *root, node *ptr)
+{
+	int nb4 = root->left_c;
+	while(root->val != ptr->val)
+	{
+		if(ptr->val < root->val)
+		{
+			root = root->left;
+			nb4 -= 1;
+			nb4 -= root->right_c;
+		}
+		else
+		{
+			root = root->right;
+			nb4 += 1;
+			nb4 += root->left_c;
+		}
+	}
+	return nb4;
+}
+
+int _range_q(ll lo, ll up, node *root)
+{
+	node *ptr = root;
+	node *in_suc = NULL, *in_pred=NULL;
+	in_suc = find_insuc(root, lo);
+	in_pred = find_inpred(root, up);
+	//cout<<"successor :"<<in_suc->val<<endl;
+	//cout<<"predecessor :"<<in_pred->val<<endl;
+	if(in_suc == NULL || in_pred == NULL)
+		return 0;
+	int nbl = nodes_b4(root, in_suc);
+	int nbu = nodes_b4(root, in_pred);
+	//cout<<"nodes before succ :"<<nbl<<endl;
+	//cout<<"nodes before pred :"<<nbu<<endl;
+	++nbu;
+	return (nbu-nbl);
 }
 
 int main()
@@ -325,14 +407,15 @@ int main()
 	//cin>>n;
 	node *root = NULL, *ptr, *ptr2;
 	//ll arr[n];
-	ll median;
+	ll median_modi;
 	int choice, size=0, ele;
+	ll lower, upper;
 	while(1)
 	{
-		cout<<endl;
+		cout<<endl<<endl;
 		cout<<"1 - insert\n";
 		cout<<"2 - remove\n";
-		cout<<"3 - find element\n";
+		cout<<"3 - find exact element\n";
 		cout<<"4 - find closest element\n";
 		cout<<"5 - find kth largest element\n";
 		cout<<"6 - range query\n\n";
@@ -345,9 +428,11 @@ int main()
 					{
 						root = ptr2;
 						cout<<"element "<<ele<<" inserted\n";
+						++size;
 					}
 					else
 						cout<<"element already present\n";
+					break;
 			case 2: cin>>ele;
 					found = false;
 					ptr2 = _delete(root, ele);
@@ -358,7 +443,39 @@ int main()
 					}
 					else
 						cout<<"element not present in set or set empty\n";
+					break;
+			case 3: cin>>ele;
+					ptr = _find(root, ele, 0);
+					if(ptr == NULL)
+						cout<<"element not present in set or set empty\n";
+					else
+						cout<<"set contains the element\n";
+					break;
+			case 4: cin>>ele;
+					ptr = _find(root, ele, 1);
+					if(ptr == NULL)
+						cout<<"element not present in set or set empty\n";
+					else
+						cout<<"closest element is "<<ptr->val<<endl;
+					break;
+			case 5: cin>>ele;
+					if(ele > size || ele <= 0 || size ==0)
+					{
+						cout<<"Invalid input or empty set\n";
+						continue;
+					}
+					median_modi = _median_modified(root, ele);
+					cout<<ele<<"'th largest element is "<<median_modi<<endl;
+					break;
+			case 6: cin>>lower>>upper;
+					if(size == 0 || lower > upper)
+					{
+						cout<<"set is empty or invalid input\n";
+						continue;
+					}
+					cout<<"no. of elements in range is :"<<_range_q(lower, upper, root)<<endl;
 		}
+		cout<<"Tree description :\n";
 		_inorder(root);
 	}
 	//for(lv=0;lv<n;lv++)
