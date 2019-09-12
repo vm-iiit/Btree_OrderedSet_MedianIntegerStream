@@ -1,10 +1,12 @@
 #include<iostream>
 using namespace std;
 
-typedef float ll;
+typedef long long ll;
 typedef struct AVL_node node;
 
 node *_rotate(node *, string);
+node *find_insuc(node *root, ll ele);
+node *find_inpred(node *root, ll ele);
 
 struct AVL_node{
 	ll val;
@@ -35,61 +37,122 @@ void _inorder(node *root)
 		return;
 	}
 	_inorder(root->left);
-	cout<<root->val<<" with height "<<root->height<<" and leftc and rightc "<<root->left_c<<' '<<root->right_c<<endl;
+	cout<<root->val<<" with height "<<root->height<<" leftc and rightc "<<root->left_c<<' '<<root->right_c<<" bal fact :"<<root->bal_fact<<endl;
 	_inorder(root->right);
 }
 
-bool found = false;
 node *_delete(node *root, ll ele)
 {
+	/*if(root)
+		//cout<<"at node "<<root->val<<endl;
+	else
+		//cout<<"at null node\n";*/
+	bool impf = false;
+	node *temp = NULL;
+	ll eval = root->val;
 	if(root == NULL)
 		return NULL;
 	else if(root->val == ele)
 	{
-		//found = true;
+		if(root->left == NULL && root->right == NULL)
+		{
+			//cout<<"no children of "<<root->val<<endl;
+			delete root;
+			//cout<<"deleted\n";
+			return  NULL;
+		}
+		else if(root->left == NULL && root->right != NULL)
+		{
+			//cout<<"one right children of "<<root->val<<endl;
+			temp = root->right;
+			delete root;
+			//impf = true;
+			root = temp;;
+			return root;
+		}
+		else if(root->left != NULL && root->right == NULL)
+		{
+			//cout<<"one left children of "<<root->val<<endl;
+			temp = root->left;
+			//cout<<"deleting "<<root->val<<endl;
+			delete root;
+			//impf = true;
+			root = temp;
+			return root;
+		}
+		else
+		{
+			//cout<<"both child case\n";
+			//cout<<"balancing factor is"<<root->bal_fact<<endl;
+			if(root->bal_fact <= 0)
+			{
+				node *succ = find_insuc(root->right, root->val);
+				//cout<<"inorder successor is "<<succ->val<<endl;
+				root->val = succ->val;
+				//cout<<"updated root's val to "<<root->val<<endl;
+				root->right = _delete(root->right, succ->val);
+				//return root;
+			}
+			else
+			{
+				node *pred = find_inpred(root->left, root->val);
+				//cout<<"inorder predecessor is "<<pred->val;
+				root->val = pred->val;
+				//cout<<"updated root's val to "<<root->val<<endl;
+				root->left = _delete(root->left, pred->val);
+				//return root;
+			}
+		}
 
-
-		return root;
 	}
-	else if(root->left && root->left->val == ele)
+	else if(root->val < ele)
 	{
-		root->left = _delete(root->left, ele);
-	}
-	else if(root->right && root->right->val == ele)
-	{
+		//cout<<"moving right\n";
 		root->right = _delete(root->right, ele);
 	}
 	else
 	{
-		if(root->val < ele)
-			root->right = _delete(root->right, ele);
-		else
-			root->left = _delete(root->left, ele);
+		//cout<<"moving left\n";
+		root->left = _delete(root->left, ele);	
 	}
-
+	
+	/*if(root)
+		cout<<"updating "<<root->val<<"'s props\n";
+	else
+		cout<<"updating null's props\n";*/
 	int lh, rh;
 	lh = (root->left)?(root->left->height):-1;
 	rh = (root->right)?(root->right->height):-1;
 	root->height = 1 + max(lh, rh);
+	root->bal_fact = lh-rh;
+	//cout<<"balance factor :"<<lh-rh<<endl;
 	int lc, rc;
 	lc = (root->left)?(root->left->left_c + root->left->right_c + 1):0;
 	rc = (root->right)?(root->right->left_c + root->right->right_c + 1):0;
+	//cout<<"calculated count\n";
 	root->left_c = lc;
 	root->right_c = rc;
+	//cout<<"updated count\n";
+	/*if(root->right)
+		cout<<"right's bal fact is "<<root->right->bal_fact<<endl;*/
 	if(abs(lh-rh) > 1)
 	{
 		string path;
-		if(root->bal_fact < 0 && root->right->bal_fact < 0)
+		if(root->bal_fact < 0 && root->right->bal_fact <= 0)
 			path.append("RR");
-		else if(root->bal_fact < 0 && root->right->bal_fact > 0)
+		else if(root->bal_fact < 0 && root->right->bal_fact >= 0)
 			path.append("RL");
-		else if(root->bal_fact > 0 && root->left->bal_fact > 0)
+		else if(root->bal_fact > 0 && root->left->bal_fact >= 0)
 			path.append("LL");
 		else
 			path.append("LR");
 		//cout<<"rotation type "<<path<<endl;
-		return _rotate(root, path);
+		root = _rotate(root, path);
 	}
+	//cout<<"returning from "<<eval<<"'s func call\n";
+	/*if(impf)
+		return temp;*/
+	//cout<<"updated "<<root->val<<"'s props\n";
 	return root;
 }
 
@@ -161,15 +224,18 @@ node *_rotate(node *target, string rot_type)
 		lh = (temp1->left)?(temp1->left->height):-1;
 		rh = (temp1->right)?(temp1->right->height):-1;
 		temp1->height = 1+ max(lh,rh);
+		temp1->bal_fact = lh-rh;
 	}
 
 	lh = (target->left)?(target->left->height):-1;
 	rh = (target->right)?(target->right->height):-1;
 	target->height = 1+ max(lh,rh);
+	target->bal_fact = lh-rh;
 
 	lh = (temp2->left)?(temp2->left->height):-1;
 	rh = (temp2->right)?(temp2->right->height):-1;
 	temp2->height = 1+ max(lh,rh);
+	temp2->bal_fact = lh-rh;
 
 	return temp2;
 }
@@ -260,6 +326,7 @@ ll _median_modified(node *ptr, int k, int size)
 
 node *_find(node *ptr, ll x, ll diff)
 {	
+	//cout<<INT_MAX<<endl;
 	if(ptr == NULL)
 		return NULL;
 	if(diff == 0)
@@ -283,9 +350,11 @@ node *_find(node *ptr, ll x, ll diff)
 				return ptr;
 			else
 			{
-				ldiff = abs(x-ptr->val);
+				//cout<<"not equal\n";
+				ldiff = abs(x - ptr->val);
 				if(ldiff == gdiff)
 				{
+					//cout<<"diff equal\n";
 					if(ptr->val < lval)
 					{
 						lval = ptr->val;
@@ -294,6 +363,7 @@ node *_find(node *ptr, ll x, ll diff)
 				}
 				else if(ldiff < gdiff)
 				{
+					//cout<<"less difference\n";
 					gdiff = ldiff;
 					lval = ptr->val;
 					found = ptr;
@@ -403,7 +473,8 @@ int main()
 	node *root = NULL, *ptr, *ptr2;
 	//ll arr[n];
 	ll median_modi;
-	int choice, size=0, ele;
+	int choice, size=0;
+	ll ele;
 	ll lower, upper;
 	while(1)
 	{
@@ -431,12 +502,12 @@ int main()
 					break;
 
 			case 2: cin>>ele;
-					found = false;
-					ptr2 = _delete(root, ele);
-					if(ptr2 != NULL)
+					ptr = _find(root, ele, 0);
+					if(ptr != NULL)
 					{
 						cout<<"element "<<ele<<" deleted\n";
-						root = ptr;
+						--size;
+						root = _delete(root, ele);
 					}
 					else
 						cout<<"element not present in set or set empty\n";
@@ -483,22 +554,4 @@ int main()
 		cout<<endl<<"Tree description :\n";
 		_inorder(root);
 	}
-	//for(lv=0;lv<n;lv++)
-	/*{
-		cin>>arr[lv];*/
-		
-		/*if(ptr == NULL)
-			cout<<"node not created\n";
-		cout<<"sending "<<root<<endl;*/
-		//path[0] = '\0';
-		//cout<<"inserting node "<<ptr->val<<endl;
-		
-		//cout<<"\n\n";
-		//_inorder(root);
-		//cout<<"\n\n";
-		/*median = _median(root, lv+1);
-		printf("%.1f\n", median);
-	}*/
-	//cout<<endl;
-	
 }
