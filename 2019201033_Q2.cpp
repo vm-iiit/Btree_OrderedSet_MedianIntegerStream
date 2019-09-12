@@ -1,4 +1,6 @@
 #include<iostream>
+#include<cstdint>
+#include<limits>
 using namespace std;
 
 typedef long long ll;
@@ -326,7 +328,7 @@ ll _median_modified(node *ptr, int k, int size)
 
 node *_find(node *ptr, ll x, ll diff)
 {	
-	//cout<<INT_MAX<<endl;
+	//cout<<INT32_MAX<<endl;
 	if(ptr == NULL)
 		return NULL;
 	if(diff == 0)
@@ -343,7 +345,7 @@ node *_find(node *ptr, ll x, ll diff)
 	else
 	{
 		node *found = ptr;
-		ll ldiff, lval=INT_MAX, gdiff=INT_MAX;
+		ll ldiff, lval=INT32_MAX, gdiff=abs(x - ptr->val)+1;
 		while(ptr)
 		{
 			if(ptr->val == x)
@@ -381,7 +383,7 @@ node *_find(node *ptr, ll x, ll diff)
 node *find_insuc(node *root, ll ele)
 {
 	node *ptr=NULL;
-	ll ldiff, gdiff = INT_MAX;
+	ll ldiff, gdiff = INT32_MAX;
 	while(root)
 	{
 		if(root->val == ele)
@@ -405,7 +407,7 @@ node *find_insuc(node *root, ll ele)
 node *find_inpred(node *root, ll ele)
 {
 	node *ptr=NULL;
-	ll ldiff, gdiff = INT_MAX;
+	ll ldiff, gdiff = INT32_MAX;
 	while(root)
 	{
 		if(root->val == ele)
@@ -489,10 +491,11 @@ int main()
 		cin>>choice;
 		switch(choice){
 			case 1: cin>>ele;
-					ptr = newAVLnode(ele);
-					ptr2 = _insert_AVL(root, ptr);
-					if(ptr2 != NULL)
+					ptr = _find(root, ele, 0);
+					if(ptr == NULL)
 					{
+						ptr = newAVLnode(ele);
+						ptr2 = _insert_AVL(root, ptr);
 						root = ptr2;
 						cout<<"element "<<ele<<" inserted\n";
 						++size;
@@ -500,7 +503,7 @@ int main()
 					else
 						cout<<"element already present\n";
 					break;
-
+					
 			case 2: cin>>ele;
 					ptr = _find(root, ele, 0);
 					if(ptr != NULL)
